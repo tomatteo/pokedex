@@ -6,7 +6,7 @@ import 'dart:convert';
 class PokemonDetailsScreen extends StatelessWidget {
   final PokedexEntry pokemon;
 
-  PokemonDetailsScreen({required this.pokemon});
+  const PokemonDetailsScreen({super.key, required this.pokemon});
 
   Future<Map<String, dynamic>> fetchPokemonDetails() async {
     final response = await http.get(Uri.parse(
@@ -16,6 +16,13 @@ class PokemonDetailsScreen extends StatelessWidget {
       final speciesResponse =
           await http.get(Uri.parse(details['species']['url']));
       final speciesData = json.decode(speciesResponse.body);
+
+      // Fetching evolution chain
+      final evolutionChainResponse =
+          await http.get(Uri.parse(speciesData['evolution_chain']['url']));
+      final evolutionChainData = json.decode(evolutionChainResponse.body);
+      final evolutionNamesAndUrls =
+          _getEvolutionNamesAndUrls(evolutionChainData['chain']);
 
       return {
         'image': details['sprites']['front_default'] ??
@@ -35,9 +42,39 @@ class PokemonDetailsScreen extends StatelessWidget {
         'moves': (details['moves'] as List)
             .map((move) => move['move']['name'].toUpperCase())
             .toList(),
+        'evolution': evolutionNamesAndUrls,
       };
     } else {
       throw Exception('Erro ao buscar detalhes do Pokémon');
+    }
+  }
+
+  // Recursively fetch names and URLs from the evolution chain
+  List<Map<String, String>> _getEvolutionNamesAndUrls(
+      Map<String, dynamic> chain) {
+    List<Map<String, String>> evolutionNamesAndUrls = [
+      {
+        'name': chain['species']['name'],
+        'url': 'https://pokeapi.co/api/v2/pokemon/${chain['species']['name']}'
+      }
+    ];
+    if (chain['evolves_to'].isNotEmpty) {
+      for (var evolution in chain['evolves_to']) {
+        evolutionNamesAndUrls.addAll(_getEvolutionNamesAndUrls(evolution));
+      }
+    }
+    return evolutionNamesAndUrls;
+  }
+
+  // Function to fetch Pokémon image
+  Future<String> _fetchPokemonImage(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final pokemonData = json.decode(response.body);
+      return pokemonData['sprites']['front_default'] ??
+          'https://via.placeholder.com/100';
+    } else {
+      throw Exception('Erro ao buscar imagem do Pokémon');
     }
   }
 
@@ -57,7 +94,7 @@ class PokemonDetailsScreen extends StatelessWidget {
         future: fetchPokemonDetails(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError || !snapshot.hasData) {
             return Center(
               child: Text(
@@ -82,10 +119,10 @@ class PokemonDetailsScreen extends StatelessWidget {
                             width: 150,
                             fit: BoxFit.cover,
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Text(
                             pokemon.name.toUpperCase(),
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -98,7 +135,7 @@ class PokemonDetailsScreen extends StatelessWidget {
                               fontSize: 18,
                             ),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Wrap(
                             spacing: 8,
                             children: data['types'].map<Widget>((type) {
@@ -106,14 +143,14 @@ class PokemonDetailsScreen extends StatelessWidget {
                                 backgroundColor: _getTypeColor(type),
                                 label: Text(
                                   type,
-                                  style: TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               );
                             }).toList(),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Container(
-                            padding: EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Colors.grey[800],
                               borderRadius: BorderRadius.circular(16),
@@ -131,13 +168,13 @@ class PokemonDetailsScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     _buildSectionTitle('Linha Evolutiva'),
-                    SizedBox(height: 8),
-                    _buildEvolutionChain(context),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 8),
+                    _buildEvolutionChain(data['evolution']),
+                    const SizedBox(height: 16),
                     _buildSectionTitle('Lista de Ataques'),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: data['moves']
@@ -188,37 +225,41 @@ class PokemonDetailsScreen extends StatelessWidget {
           ),
           Text(
             value,
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEvolutionChain(BuildContext context) {
-    // Mock de linha evolutiva para simulação.
-    final List<String> evolutionChain = [
-      'Bulbasaur',
-      'Ivysaur',
-      'Venusaur'
-    ]; // Substitua com dados reais.
-
+  Widget _buildEvolutionChain(List<Map<String, String>> evolutionNamesAndUrls) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: evolutionChain
-          .map((name) => Column(
+      children: evolutionNamesAndUrls
+          .map((evolution) => Column(
                 children: [
-                  Image.network(
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evolutionChain.indexOf(name) + 1}.png',
-                    height: 80,
-                    width: 80,
+                  FutureBuilder<String>(
+                    future: _fetchPokemonImage(evolution['url']!),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError || !snapshot.hasData) {
+                        return const Icon(Icons.error, color: Colors.white);
+                      } else {
+                        return Image.network(
+                          snapshot.data!,
+                          height: 80,
+                          width: 80,
+                        );
+                      }
+                    },
                   ),
                   Text(
-                    name.toUpperCase(),
-                    style: TextStyle(color: Colors.white),
+                    evolution['name']!.toUpperCase(),
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  if (name != evolutionChain.last)
-                    Icon(Icons.arrow_downward, color: Colors.white),
+                  if (evolution != evolutionNamesAndUrls.last)
+                    const Icon(Icons.arrow_downward, color: Colors.white),
                 ],
               ))
           .toList(),

@@ -9,6 +9,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,6 +20,8 @@ class MyApp extends StatelessWidget {
 }
 
 class PokedexPage extends StatefulWidget {
+  const PokedexPage({super.key});
+
   @override
   _PokedexPageState createState() => _PokedexPageState();
 }
@@ -112,7 +116,7 @@ class _PokedexPageState extends State<PokedexPage> {
       if (evolutionResponse.statusCode == 200) {
         final evolutionData = json.decode(evolutionResponse.body);
 
-        // Processar cadeia de evoluções
+        // cadeia de evoluções
         List<String> evolutionNames = [];
         var current = evolutionData['chain'];
         while (current != null) {
@@ -139,21 +143,31 @@ class _PokedexPageState extends State<PokedexPage> {
       appBar: AppBar(
         backgroundColor: Colors.grey[850],
         title: Center(
-          child: Image.asset(
-            'assets/images/logopoke.png',
-            height: 40,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HeitorImageScreen(),
+                ),
+              );
+            },
+            child: Image.asset(
+              'assets/images/logopoke.png',
+              height: 40,
+            ),
           ),
         ),
       ),
       body: ListView.builder(
         controller: scrollController,
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         itemCount: allPokemon.length + 1,
         itemBuilder: (context, index) {
           if (index == allPokemon.length) {
             return isLoading
-                ? Center(child: CircularProgressIndicator())
-                : SizedBox.shrink();
+                ? const Center(child: CircularProgressIndicator())
+                : const SizedBox.shrink();
           }
           final pokemon = allPokemon[index];
           return PokemonCard(pokemon: pokemon);
@@ -163,10 +177,32 @@ class _PokedexPageState extends State<PokedexPage> {
   }
 }
 
+class HeitorImageScreen extends StatelessWidget {
+  const HeitorImageScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Quem é esse Pokémon?",
+            style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.grey[850],
+      ),
+      backgroundColor: Colors.grey[900],
+      body: Center(
+        child: Image.asset(
+          'assets/images/heitor.jpeg', // Certifique-se de adicionar esta imagem
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+}
+
 class PokemonCard extends StatelessWidget {
   final PokedexEntry pokemon;
 
-  PokemonCard({required this.pokemon});
+  const PokemonCard({super.key, required this.pokemon});
 
   @override
   Widget build(BuildContext context) {
@@ -192,20 +228,20 @@ class PokemonCard extends StatelessWidget {
                 width: 100,
                 fit: BoxFit.cover,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 pokemon.number,
                 style: TextStyle(color: Colors.grey[500]),
               ),
               Text(
                 pokemon.name,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: pokemon.types.map((type) {
@@ -217,7 +253,7 @@ class PokemonCard extends StatelessWidget {
                       decoration: _getTypeDecoration(type),
                       child: Text(
                         type.toUpperCase(),
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   );
@@ -244,7 +280,7 @@ class PokemonCard extends StatelessWidget {
         );
       case 'flying':
         return BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [Colors.blue, Colors.grey],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -272,7 +308,7 @@ class PokemonCard extends StatelessWidget {
         );
       case 'bug':
         return BoxDecoration(
-          color: const Color.fromARGB(255, 63, 211, 71)!,
+          color: const Color.fromARGB(255, 63, 211, 71),
           borderRadius: BorderRadius.circular(8),
         );
       case 'fighting':
@@ -307,7 +343,7 @@ class PokemonCard extends StatelessWidget {
         );
       case 'dragon':
         return BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [Colors.blue, Colors.orange],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -316,12 +352,17 @@ class PokemonCard extends StatelessWidget {
         );
       case 'dark':
         return BoxDecoration(
-          color: Colors.grey[800]!,
+          color: const Color.fromARGB(255, 26, 26, 26),
           borderRadius: BorderRadius.circular(8),
         );
       case 'water':
         return BoxDecoration(
           color: Colors.blue,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'normal':
+        return BoxDecoration(
+          color: const Color.fromARGB(255, 156, 156, 156),
           borderRadius: BorderRadius.circular(8),
         );
       default:
