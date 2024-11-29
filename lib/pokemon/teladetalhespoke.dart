@@ -139,11 +139,15 @@ class PokemonDetailsScreen extends StatelessWidget {
                           Wrap(
                             spacing: 8,
                             children: data['types'].map<Widget>((type) {
-                              return Chip(
-                                backgroundColor: _getTypeColor(type),
-                                label: Text(
+                              return Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration:
+                                    _getTypeDecoration(type.toLowerCase()),
+                                child: Text(
                                   type,
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 16),
                                 ),
                               );
                             }).toList(),
@@ -266,18 +270,110 @@ class PokemonDetailsScreen extends StatelessWidget {
     );
   }
 
-  Color _getTypeColor(String type) {
-    switch (type.toLowerCase()) {
+  BoxDecoration _getTypeDecoration(String type) {
+    switch (type) {
       case 'grass':
-        return Colors.green;
-      case 'poison':
-        return Colors.purple;
+        return BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(8),
+        );
       case 'fire':
-        return Colors.red;
+        return BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'flying':
+        return BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.blue, Colors.grey],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'electric':
+        return BoxDecoration(
+          color: Colors.yellow,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'ground':
+        return BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.yellow, Colors.brown[600]!],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'fairy':
+        return BoxDecoration(
+          color: Colors.pink[200]!,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'bug':
+        return BoxDecoration(
+          color: const Color.fromARGB(255, 63, 211, 71),
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'fighting':
+        return BoxDecoration(
+          color: Colors.deepOrange,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'psychic':
+        return BoxDecoration(
+          color: const Color.fromARGB(255, 231, 65, 162),
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'steel':
+        return BoxDecoration(
+          color: Colors.grey[600]!,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'ghost':
+        return BoxDecoration(
+          color: const Color.fromARGB(255, 78, 19, 88),
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'rock':
+        return BoxDecoration(
+          color: const Color.fromARGB(255, 184, 134, 11),
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'ice':
+        return BoxDecoration(
+          color: Colors.lightBlueAccent,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'dragon':
+        return BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.blue, Colors.orange],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'dark':
+        return BoxDecoration(
+          color: const Color.fromARGB(255, 26, 26, 26),
+          borderRadius: BorderRadius.circular(8),
+        );
       case 'water':
-        return Colors.blue;
+        return BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'normal':
+        return BoxDecoration(
+          color: const Color.fromARGB(255, 156, 156, 156),
+          borderRadius: BorderRadius.circular(8),
+        );
       default:
-        return Colors.grey;
+        return BoxDecoration(
+          color: Colors.purple,
+          borderRadius: BorderRadius.circular(8),
+        );
     }
   }
 }
