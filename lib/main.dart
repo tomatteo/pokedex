@@ -295,7 +295,7 @@ class PokemonCard extends StatelessWidget {
       case 'ground':
         return BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.yellow, Colors.brown[200]!],
+            colors: [Colors.yellow, Colors.brown[600]!],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),

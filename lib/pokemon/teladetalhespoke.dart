@@ -6,7 +6,7 @@ import 'dart:convert';
 class PokemonDetailsScreen extends StatelessWidget {
   final PokedexEntry pokemon;
 
-  const PokemonDetailsScreen({super.key, required this.pokemon});
+  PokemonDetailsScreen({required this.pokemon});
 
   Future<Map<String, dynamic>> fetchPokemonDetails() async {
     final response = await http.get(Uri.parse(
@@ -94,7 +94,7 @@ class PokemonDetailsScreen extends StatelessWidget {
         future: fetchPokemonDetails(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError || !snapshot.hasData) {
             return Center(
               child: Text(
@@ -119,10 +119,10 @@ class PokemonDetailsScreen extends StatelessWidget {
                             width: 150,
                             fit: BoxFit.cover,
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Text(
                             pokemon.name.toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -135,7 +135,7 @@ class PokemonDetailsScreen extends StatelessWidget {
                               fontSize: 18,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Wrap(
                             spacing: 8,
                             children: data['types'].map<Widget>((type) {
@@ -143,14 +143,14 @@ class PokemonDetailsScreen extends StatelessWidget {
                                 backgroundColor: _getTypeColor(type),
                                 label: Text(
                                   type,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: TextStyle(color: Colors.white),
                                 ),
                               );
                             }).toList(),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Colors.grey[800],
                               borderRadius: BorderRadius.circular(16),
@@ -168,13 +168,13 @@ class PokemonDetailsScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     _buildSectionTitle('Linha Evolutiva'),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     _buildEvolutionChain(data['evolution']),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     _buildSectionTitle('Lista de Ataques'),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: data['moves']
@@ -225,7 +225,7 @@ class PokemonDetailsScreen extends StatelessWidget {
           ),
           Text(
             value,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: Colors.white, fontSize: 16),
           ),
         ],
       ),
@@ -242,9 +242,9 @@ class PokemonDetailsScreen extends StatelessWidget {
                     future: _fetchPokemonImage(evolution['url']!),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
+                        return CircularProgressIndicator();
                       } else if (snapshot.hasError || !snapshot.hasData) {
-                        return const Icon(Icons.error, color: Colors.white);
+                        return Icon(Icons.error, color: Colors.white);
                       } else {
                         return Image.network(
                           snapshot.data!,
@@ -256,10 +256,10 @@ class PokemonDetailsScreen extends StatelessWidget {
                   ),
                   Text(
                     evolution['name']!.toUpperCase(),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                   ),
                   if (evolution != evolutionNamesAndUrls.last)
-                    const Icon(Icons.arrow_downward, color: Colors.white),
+                    Icon(Icons.arrow_downward, color: Colors.white),
                 ],
               ))
           .toList(),
