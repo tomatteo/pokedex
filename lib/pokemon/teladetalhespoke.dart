@@ -17,18 +17,35 @@ class PokemonDetailsScreen extends StatelessWidget {
           await http.get(Uri.parse(details['species']['url']));
       final speciesData = json.decode(speciesResponse.body);
 
-      // Fetching evolution chain
+      // evolucao
       final evolutionChainResponse =
           await http.get(Uri.parse(speciesData['evolution_chain']['url']));
       final evolutionChainData = json.decode(evolutionChainResponse.body);
       final evolutionNamesAndUrls =
           _getEvolutionNamesAndUrls(evolutionChainData['chain']);
 
+      // PP e damage
+      List<Map<String, dynamic>> detailedMoves = [];
+      for (var move in details['moves']) {
+        final moveDetailsResponse =
+            await http.get(Uri.parse(move['move']['url']));
+        final moveDetails = json.decode(moveDetailsResponse.body);
+
+        int pp = moveDetails['pp'];
+        int power = moveDetails['power'] ?? 0;
+
+        detailedMoves.add({
+          'name': move['move']['name'].toUpperCase(),
+          'pp': pp,
+          'power': power,
+        });
+      }
+
       return {
         'image': details['sprites']['front_default'] ??
             'https://via.placeholder.com/100',
-        'height': details['height'] / 10, // metros
-        'weight': details['weight'] / 10, // kg
+        'height': details['height'] / 10,
+        'weight': details['weight'] / 10,
         'types': (details['types'] as List)
             .map((type) => type['type']['name'].toUpperCase())
             .toList(),
@@ -37,11 +54,9 @@ class PokemonDetailsScreen extends StatelessWidget {
             .toList(),
         'gender': speciesData['gender_rate'] == -1 ? 'N/A' : 'Male/Female',
         'generation': speciesData['generation']['name']
-            .replaceFirst('generation-', '')
+            .replaceFirst('generation-', ' ')
             .toUpperCase(),
-        'moves': (details['moves'] as List)
-            .map((move) => move['move']['name'].toUpperCase())
-            .toList(),
+        'moves': detailedMoves,
         'evolution': evolutionNamesAndUrls,
       };
     } else {
@@ -49,7 +64,7 @@ class PokemonDetailsScreen extends StatelessWidget {
     }
   }
 
-  // Recursively fetch names and URLs from the evolution chain
+  //seção de evoluções
   List<Map<String, String>> _getEvolutionNamesAndUrls(
       Map<String, dynamic> chain) {
     List<Map<String, String>> evolutionNamesAndUrls = [
@@ -66,7 +81,6 @@ class PokemonDetailsScreen extends StatelessWidget {
     return evolutionNamesAndUrls;
   }
 
-  // Function to fetch Pokémon image
   Future<String> _fetchPokemonImage(String url) async {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -89,6 +103,13 @@ class PokemonDetailsScreen extends StatelessWidget {
           height: 40,
         ),
         centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          color: Color.fromARGB(255, 253, 253, 253),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: fetchPokemonDetails(),
@@ -113,11 +134,28 @@ class PokemonDetailsScreen extends StatelessWidget {
                     Center(
                       child: Column(
                         children: [
-                          Image.network(
-                            data['image'],
-                            height: 150,
-                            width: 150,
-                            fit: BoxFit.cover,
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                height: 250,
+                                width: 250,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage(
+                                        'assets/images/backfoto.jpg'),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                              ),
+                              Image.network(
+                                data['image'],
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
                           ),
                           SizedBox(height: 16),
                           Text(
@@ -152,6 +190,8 @@ class PokemonDetailsScreen extends StatelessWidget {
                               );
                             }).toList(),
                           ),
+
+                          //pequenos detalhes dos pokemons
                           SizedBox(height: 16),
                           Container(
                             padding: EdgeInsets.all(16),
@@ -176,21 +216,42 @@ class PokemonDetailsScreen extends StatelessWidget {
                     _buildSectionTitle('Linha Evolutiva'),
                     SizedBox(height: 8),
                     _buildEvolutionChain(data['evolution']),
-                    SizedBox(height: 16),
+                    SizedBox(height: 40),
                     _buildSectionTitle('Lista de Ataques'),
-                    SizedBox(height: 8),
+                    SizedBox(height: 13),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: data['moves']
                           .map<Widget>(
                             (move) => Padding(
                               padding: const EdgeInsets.only(bottom: 4.0),
-                              child: Text(
-                                '- $move',
-                                style: TextStyle(
-                                  color: Colors.grey[300],
-                                  fontSize: 16,
-                                ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '- ${move['name']}',
+                                      style: TextStyle(
+                                        color: Colors.grey[300],
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    'PP: ${move['pp']}',
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Dano: ${move['power'] == 0 ? 'N/A' : move['power']}',
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           )
@@ -237,36 +298,44 @@ class PokemonDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildEvolutionChain(List<Map<String, String>> evolutionNamesAndUrls) {
-    return Row(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: evolutionNamesAndUrls
-          .map((evolution) => Column(
-                children: [
-                  FutureBuilder<String>(
-                    future: _fetchPokemonImage(evolution['url']!),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else if (snapshot.hasError || !snapshot.hasData) {
-                        return Icon(Icons.error, color: Colors.white);
-                      } else {
-                        return Image.network(
-                          snapshot.data!,
-                          height: 80,
-                          width: 80,
-                        );
-                      }
-                    },
-                  ),
-                  Text(
-                    evolution['name']!.toUpperCase(),
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  if (evolution != evolutionNamesAndUrls.last)
-                    Icon(Icons.arrow_downward, color: Colors.white),
-                ],
-              ))
-          .toList(),
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: evolutionNamesAndUrls.map<Widget>((evolution) {
+        return Column(
+          children: [
+            FutureBuilder<String>(
+              future: _fetchPokemonImage(evolution['url']!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError || !snapshot.hasData) {
+                  return Icon(Icons.error, color: Colors.red);
+                } else {
+                  return Column(
+                    children: [
+                      Image.network(
+                        snapshot.data!,
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.cover,
+                      ),
+                      Text(
+                        evolution['name']!.toUpperCase(),
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+            if (evolution != evolutionNamesAndUrls.last)
+              Icon(Icons.arrow_downward,
+                  color: Colors.white), // Setas para baixo
+            SizedBox(height: 8),
+          ],
+        );
+      }).toList(),
     );
   }
 

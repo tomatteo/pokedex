@@ -14,6 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: PokedexPage(),
     );
   }
@@ -93,7 +94,6 @@ class _PokedexPageState extends State<PokedexPage> {
     if (response.statusCode == 200) {
       final details = json.decode(response.body);
 
-      // Obter a URL da espécie
       final speciesUrl = details['species']['url'];
       final evolutionChain = await fetchEvolutionChain(speciesUrl);
 
@@ -115,8 +115,6 @@ class _PokedexPageState extends State<PokedexPage> {
       final evolutionResponse = await http.get(Uri.parse(evolutionUrl));
       if (evolutionResponse.statusCode == 200) {
         final evolutionData = json.decode(evolutionResponse.body);
-
-        // cadeia de evoluções
         List<String> evolutionNames = [];
         var current = evolutionData['chain'];
         while (current != null) {
@@ -159,24 +157,31 @@ class _PokedexPageState extends State<PokedexPage> {
           ),
         ),
       ),
-      body: ListView.builder(
-        controller: scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: allPokemon.length + 1,
-        itemBuilder: (context, index) {
-          if (index == allPokemon.length) {
-            return isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : const SizedBox.shrink();
-          }
-          final pokemon = allPokemon[index];
-          return PokemonCard(pokemon: pokemon);
-        },
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: allPokemon.length + 1,
+              itemBuilder: (context, index) {
+                if (index == allPokemon.length) {
+                  return isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : const SizedBox.shrink();
+                }
+                final pokemon = allPokemon[index];
+                return PokemonCard(pokemon: pokemon);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
+// easter egg do heito
 class HeitorImageScreen extends StatelessWidget {
   const HeitorImageScreen({super.key});
 
@@ -184,14 +189,23 @@ class HeitorImageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Quem é esse Pokémon?",
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Quem é esse Pokémon?",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.grey[850],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       backgroundColor: Colors.grey[900],
       body: Center(
         child: Image.asset(
-          'assets/images/heitor.jpeg', // Certifique-se de adicionar esta imagem
+          'assets/images/heitor.jpeg',
           fit: BoxFit.contain,
         ),
       ),
@@ -215,6 +229,8 @@ class PokemonCard extends StatelessWidget {
           ),
         );
       },
+
+      //car q aparece os poke
       child: Card(
         color: Colors.grey[800],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -224,8 +240,8 @@ class PokemonCard extends StatelessWidget {
             children: [
               Image.network(
                 pokemon.imageUrl,
-                height: 100,
-                width: 100,
+                height: 120,
+                width: 120,
                 fit: BoxFit.cover,
               ),
               const SizedBox(height: 8),
@@ -266,6 +282,7 @@ class PokemonCard extends StatelessWidget {
     );
   }
 
+//corzinha pros diferentes tipos
   BoxDecoration _getTypeDecoration(String type) {
     switch (type) {
       case 'grass':
@@ -313,12 +330,22 @@ class PokemonCard extends StatelessWidget {
         );
       case 'fighting':
         return BoxDecoration(
-          color: Colors.deepOrange,
+          color: Colors.deepOrange[400]!,
           borderRadius: BorderRadius.circular(8),
         );
       case 'psychic':
         return BoxDecoration(
-          color: const Color.fromARGB(255, 231, 65, 162),
+          color: Colors.purple[300]!,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'dark':
+        return BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'water':
+        return BoxDecoration(
+          color: Colors.blue[700]!,
           borderRadius: BorderRadius.circular(8),
         );
       case 'steel':
@@ -326,48 +353,24 @@ class PokemonCard extends StatelessWidget {
           color: Colors.grey[600]!,
           borderRadius: BorderRadius.circular(8),
         );
-      case 'ghost':
+      case 'poison':
         return BoxDecoration(
-          color: const Color.fromARGB(255, 78, 19, 88),
-          borderRadius: BorderRadius.circular(8),
-        );
-      case 'rock':
-        return BoxDecoration(
-          color: const Color.fromARGB(255, 184, 134, 11),
-          borderRadius: BorderRadius.circular(8),
-        );
-      case 'ice':
-        return BoxDecoration(
-          color: Colors.lightBlueAccent,
-          borderRadius: BorderRadius.circular(8),
-        );
-      case 'dragon':
-        return BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Colors.blue, Colors.orange],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        );
-      case 'dark':
-        return BoxDecoration(
-          color: const Color.fromARGB(255, 26, 26, 26),
-          borderRadius: BorderRadius.circular(8),
-        );
-      case 'water':
-        return BoxDecoration(
-          color: Colors.blue,
+          color: Colors.purple[400]!,
           borderRadius: BorderRadius.circular(8),
         );
       case 'normal':
         return BoxDecoration(
-          color: const Color.fromARGB(255, 156, 156, 156),
+          color: Colors.grey[300]!,
+          borderRadius: BorderRadius.circular(8),
+        );
+      case 'rock':
+        return BoxDecoration(
+          color: Colors.grey[600]!,
           borderRadius: BorderRadius.circular(8),
         );
       default:
         return BoxDecoration(
-          color: Colors.purple,
+          color: Colors.blue[700]!,
           borderRadius: BorderRadius.circular(8),
         );
     }
