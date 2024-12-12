@@ -297,6 +297,7 @@ class PokemonDetailsScreen extends StatelessWidget {
     );
   }
 
+//mostrar linha evo
   Widget _buildEvolutionChain(List<Map<String, String>> evolutionNamesAndUrls) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -330,8 +331,8 @@ class PokemonDetailsScreen extends StatelessWidget {
               },
             ),
             if (evolution != evolutionNamesAndUrls.last)
-              Icon(Icons.arrow_downward,
-                  color: Colors.white), // Setas para baixo
+              Icon(Icons.arrow_downward, //setinha na evo
+                  color: Colors.white),
             SizedBox(height: 8),
           ],
         );
